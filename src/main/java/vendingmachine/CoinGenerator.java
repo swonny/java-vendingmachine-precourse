@@ -15,6 +15,9 @@ public class CoinGenerator {
         while (vendingMachineMoney > 0) {
             // TODO : 메소드 분리 가능해보임
             int coinAmount = Randoms.pickNumberInList(amountOfCoins);
+            if (vendingMachineMoney < coinAmount) {
+                continue;
+            }
             vendingMachineMoney -= coinAmount;
             Coin coin = Coin.getCoinByAmount(coinAmount);
             // TODO : 해시맵 가져오지 않고 바로 value에서 작업할 수 있는 방법 찾아보기

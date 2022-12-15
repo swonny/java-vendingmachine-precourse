@@ -1,10 +1,8 @@
 package controller;
 
 import exception.CommonException;
-import vendingmachine.Coin;
-import vendingmachine.CoinGenerator;
-import vendingmachine.Product;
-import vendingmachine.VendingMachine;
+import repository.ProductRepository;
+import vendingmachine.*;
 import view.InputView;
 import view.OutputView;
 
@@ -19,6 +17,9 @@ public class MainController {
     private static final String INFORMATION_DELIMITER = ",";
     private static final String PRODUCT_START_BRACKET = "[";
     private static final String PRODUCT_END_BRACKET = "]";
+    private static final int PRODUCT_NAME_INDEX = 0;
+    private static final int PRODUCT_PRICE_INDEX = 1;
+    private static final int PRODUCT_COUNT_INDEX = 2;
     private CoinGenerator coinGenerator;
     private VendingMachine vendingMachine;
 
@@ -34,15 +35,44 @@ public class MainController {
             EnumMap<Coin, Integer> machineCoins = coinGenerator.generate(vendingMachineMoney);
             OutputView.printVendingMachineCoins(machineCoins);
             List<List<String>> productInformation = getProductInformation(InputView.readProductInformation());
-            // TODO : 정보 가지고 Product 객체 생성하기구현 필요
+            makeProducts(new ProductMaker(), productInformation);
             int payment = getPayment(InputView.readPayment());
-            // TODO : payment vendingmachine 저장 구현 필요
+            vendingMachine.addPayment(payment);
             buyProduct(payment);
             printResult();
         } catch (IllegalArgumentException exception) {
             OutputView.printExceptionMessage(exception);
-            run();
         }
+    }
+
+    private void makeProducts(ProductMaker productMaker, List<List<String>> productInformation) {
+        for (List<String> product : productInformation) {
+            String productName = getProductName(product);
+            int productPrice = getProductPrice(product);
+            int productCount = getProductCount(product);
+            Product newProduct = productMaker.generate(productName, productPrice);
+            vendingMachine.addProduct(newProduct, productCount);
+        }
+    }
+
+    private int getProductCount(List<String> product) {
+        // TODO : 숫자 아니면 예외처리
+        return Integer.valueOf(product.get(PRODUCT_COUNT_INDEX));
+    }
+
+    private int getProductPrice(List<String> product) {
+        // TODO : 숫자 아니면 예외처리
+        String price = product.get(PRODUCT_PRICE_INDEX);
+        return Integer.valueOf(price);
+    }
+
+    private String getProductName(List<String> product) {
+        // TODO : 중복되는 객체 있으면 예외 발생
+        String name = product.get(PRODUCT_NAME_INDEX);
+//        if (ProductRepository.has(product)) {
+//
+//        }
+        return name;
     }
 
     private void printResult() {
@@ -54,18 +84,10 @@ public class MainController {
         if (vendingMachine.isLowerThanLowestPrice(payment) || vendingMachine.isProductEmpty()) {
             return;
         }
-        // TODO : 하드코딩한 값 -> 자판기에 있는 남은 payment로 변경해야함
-        OutputView.printAvailablePayment(1000);
-        Product buyingProduct = getProduct(InputView.readProductName());
+        OutputView.printAvailablePayment(vendingMachine.getPayment());
+        Product buyingProduct = ProductRepository.getProduct(InputView.readProductName());
         vendingMachine.buy(buyingProduct);
         buyProduct(payment);
-    }
-
-    private Product getProduct(String productName) {
-        // TODO :ProductRepository에서 찾아서 돌려줘야함
-        // TODO : return값 변경
-        // TODO : validate & try-catch하기
-        return null;
     }
 
     private int getPayment(String payment) {

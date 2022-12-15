@@ -15,12 +15,31 @@ public class VendingMachine {
     }
 
     public void buy(Product buyingProduct) {
-        // TODO : 사용자 금액 --, 상품목록--
+        validateBuyingProduct(buyingProduct);
+        payment -= buyingProduct.getPrice();
+        productList.put(buyingProduct, productList.get(buyingProduct) - 1);
+    }
+
+    private void validateBuyingProduct(Product buyingProduct) {
+        validateProductExisting(buyingProduct);
+        validateBuyablePrice(buyingProduct);
+    }
+
+    private void validateBuyablePrice(Product buyingProduct) {
+        if (buyingProduct.getPrice() > payment) {
+            throw new IllegalArgumentException("현재 잔액으로 구매 불가능한 상품입니다.");
+        }
+    }
+
+    private void validateProductExisting(Product buyingProduct) {
+        if (productList.get(buyingProduct) == 0) {
+            throw new IllegalArgumentException("재고가 없습니다.");
+        }
     }
 
     public boolean isLowerThanLowestPrice(int payment) {
-        return productList.keySet().stream()
-                .anyMatch(product -> product.getPrice() < payment);
+        return productList.values().stream()
+                .anyMatch(price -> price >= payment);
     }
 
     public boolean isProductEmpty() {
@@ -33,5 +52,13 @@ public class VendingMachine {
 
     public int getPayment() {
         return payment;
+    }
+
+    public void addProduct(Product newProduct, int count) {
+        productList.put(newProduct, count);
+    }
+
+    public void addPayment(int payment) {
+        this.payment = payment;
     }
 }

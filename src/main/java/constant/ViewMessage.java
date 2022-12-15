@@ -6,6 +6,9 @@ public class ViewMessage {
     public static final String COIN_LIST_FORMAT = "%d원 - %d개";
     public static final String READ_PRODUCT_INFORMATION = "상품명과 가격, 수량을 입력해 주세요.";
     public static final String READ_PAYMENT = "투입 금액을 입력해 주세요.";
+    public static final String AVAILABLE_PAYMENT_FORMAT = "투입 금액: %d원";
+    public static final String READ_PRODUCT_NAME = "구매할 상품명을 입력해 주세요.";
 }
+
 
 

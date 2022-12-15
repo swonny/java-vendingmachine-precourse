@@ -21,4 +21,9 @@ public class InputView {
         OutputView.printReadingPayment();
         return read();
     }
+
+    public static String readProductName() {
+        OutputView.printReadingProductName();
+        return read();
+    }
 }

@@ -3,6 +3,8 @@ package controller;
 import exception.CommonException;
 import vendingmachine.Coin;
 import vendingmachine.CoinGenerator;
+import vendingmachine.Product;
+import vendingmachine.VendingMachine;
 import view.InputView;
 import view.OutputView;
 
@@ -18,12 +20,15 @@ public class MainController {
     private static final String PRODUCT_START_BRACKET = "[";
     private static final String PRODUCT_END_BRACKET = "]";
     private CoinGenerator coinGenerator;
+    private VendingMachine vendingMachine;
 
-    public MainController(CoinGenerator coinGenerator) {
+    public MainController(CoinGenerator coinGenerator, VendingMachine vendingMachine) {
         this.coinGenerator = coinGenerator;
+        this.vendingMachine = vendingMachine;
     }
 
     public void run() {
+        // TODO : 각자 따로 try-catch 구현해야할듯
         try {
             int vendingMachineMoney = getVendingMachineMoney(InputView.readVendingMachineMoney());
             EnumMap<Coin, Integer> machineCoins = coinGenerator.generate(vendingMachineMoney);
@@ -31,11 +36,36 @@ public class MainController {
             List<List<String>> productInformation = getProductInformation(InputView.readProductInformation());
             // TODO : 정보 가지고 Product 객체 생성하기구현 필요
             int payment = getPayment(InputView.readPayment());
-
+            // TODO : payment vendingmachine 저장 구현 필요
+            buyProduct(payment);
+            printResult();
         } catch (IllegalArgumentException exception) {
             OutputView.printExceptionMessage(exception);
             run();
         }
+    }
+
+    private void printResult() {
+        OutputView.printAvailablePayment(vendingMachine.getPayment());
+        OutputView.printChanges(vendingMachine.getChanges());
+    }
+
+    private void buyProduct(int payment) {
+        if (vendingMachine.isLowerThanLowestPrice(payment) || vendingMachine.isProductEmpty()) {
+            return;
+        }
+        // TODO : 하드코딩한 값 -> 자판기에 있는 남은 payment로 변경해야함
+        OutputView.printAvailablePayment(1000);
+        Product buyingProduct = getProduct(InputView.readProductName());
+        vendingMachine.buy(buyingProduct);
+        buyProduct(payment);
+    }
+
+    private Product getProduct(String productName) {
+        // TODO :ProductRepository에서 찾아서 돌려줘야함
+        // TODO : return값 변경
+        // TODO : validate & try-catch하기
+        return null;
     }
 
     private int getPayment(String payment) {

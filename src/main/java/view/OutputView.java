@@ -1,5 +1,9 @@
 package view;
 
+import vendingmachine.Coin;
+
+import java.util.EnumMap;
+
 import static constant.ViewMessage.*;
 
 public class OutputView {
@@ -31,4 +35,19 @@ public class OutputView {
         println("[INFO] " + value);
     }
 
+    public static void printReadingMachineMoney() {
+        println(READ_VENDING_MACHINE_MONEY);
+    }
+
+    public static void printVendingMachineCoins(EnumMap<Coin, Integer> machineCoins) {
+        printNewLine();
+        println(VENDING_MACHINE_COIN_LIST_TITLE);
+        machineCoins.keySet().stream()
+                .forEach(coin -> printFormat(COIN_LIST_FORMAT, coin.getAmount(), machineCoins.get(coin)));
+    }
+
+    private static void printFormat(String coinListFormat, int amount, Integer coinCount) {
+        System.out.printf(coinListFormat, amount, coinCount);
+        printNewLine();
+    }
 }

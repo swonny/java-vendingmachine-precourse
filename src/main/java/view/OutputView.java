@@ -50,4 +50,13 @@ public class OutputView {
         System.out.printf(coinListFormat, amount, coinCount);
         printNewLine();
     }
+
+    public static void printReadingProductInformation() {
+        println(READ_PRODUCT_INFORMATION);
+    }
+
+    public static void printReadingPayment() {
+        printNewLine();
+        println(READ_PAYMENT);
+    }
 }

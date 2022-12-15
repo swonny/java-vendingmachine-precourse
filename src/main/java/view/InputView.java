@@ -11,4 +11,14 @@ public class InputView {
     private static String read() {
         return Console.readLine();
     }
+
+    public static String readProductInformation() {
+        OutputView.printReadingProductInformation();
+        return read();
+    }
+
+    public static String readPayment() {
+        OutputView.printReadingPayment();
+        return read();
+    }
 }

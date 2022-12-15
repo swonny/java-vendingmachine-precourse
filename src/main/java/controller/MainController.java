@@ -38,8 +38,7 @@ public class MainController {
             makeProducts(new ProductMaker(), productInformation);
             int payment = getPayment(InputView.readPayment());
             vendingMachine.addPayment(payment);
-            buyProduct(payment);
-            printResult();
+            buyProduct();
         } catch (IllegalArgumentException exception) {
             OutputView.printExceptionMessage(exception);
         }
@@ -55,6 +54,23 @@ public class MainController {
         }
     }
 
+    private void buyProduct() {
+        if (vendingMachine.isPaymentLowerThanLowestPrice() || vendingMachine.isProductEmpty()) {
+            printResult(vendingMachine.getChanges());
+            return;
+        }
+        OutputView.printAvailablePayment(vendingMachine.getPayment());
+        Product buyingProduct = ProductRepository.getProduct(InputView.readProductName());
+        vendingMachine.buy(buyingProduct);
+        buyProduct();
+    }
+
+    private void printResult(EnumMap<Coin, Integer> changes) {
+        OutputView.printAvailablePayment(vendingMachine.getPayment());
+        System.out.println(changes);
+        OutputView.printChanges(changes);
+    }
+
     private int getProductCount(List<String> product) {
         // TODO : 숫자 아니면 예외처리
         return Integer.valueOf(product.get(PRODUCT_COUNT_INDEX));
@@ -67,27 +83,15 @@ public class MainController {
     }
 
     private String getProductName(List<String> product) {
-        // TODO : 중복되는 객체 있으면 예외 발생
         String name = product.get(PRODUCT_NAME_INDEX);
-//        if (ProductRepository.has(product)) {
-//
-//        }
+        validateProduct(name);
         return name;
     }
 
-    private void printResult() {
-        OutputView.printAvailablePayment(vendingMachine.getPayment());
-        OutputView.printChanges(vendingMachine.getChanges());
-    }
-
-    private void buyProduct(int payment) {
-        if (vendingMachine.isLowerThanLowestPrice(payment) || vendingMachine.isProductEmpty()) {
-            return;
+    private void validateProduct(String name) {
+        if (ProductRepository.has(name)) {
+            throw new IllegalArgumentException("이미 존재하는 상품입니다.");
         }
-        OutputView.printAvailablePayment(vendingMachine.getPayment());
-        Product buyingProduct = ProductRepository.getProduct(InputView.readProductName());
-        vendingMachine.buy(buyingProduct);
-        buyProduct(payment);
     }
 
     private int getPayment(String payment) {

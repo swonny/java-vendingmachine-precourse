@@ -34,6 +34,7 @@ public class MainController {
             int vendingMachineMoney = getVendingMachineMoney(InputView.readVendingMachineMoney());
             EnumMap<Coin, Integer> machineCoins = coinGenerator.generate(vendingMachineMoney);
             OutputView.printVendingMachineCoins(machineCoins);
+            vendingMachine.putChanges(machineCoins);
             List<List<String>> productInformation = getProductInformation(InputView.readProductInformation());
             makeProducts(new ProductMaker(), productInformation);
             int payment = getPayment(InputView.readPayment());
@@ -67,18 +68,18 @@ public class MainController {
 
     private void printResult(EnumMap<Coin, Integer> changes) {
         OutputView.printAvailablePayment(vendingMachine.getPayment());
-        System.out.println(changes);
         OutputView.printChanges(changes);
     }
 
     private int getProductCount(List<String> product) {
-        // TODO : 숫자 아니면 예외처리
-        return Integer.valueOf(product.get(PRODUCT_COUNT_INDEX));
+        String count = product.get(PRODUCT_COUNT_INDEX);
+        CommonException.validateNumericOnly(count);
+        return Integer.valueOf(count);
     }
 
     private int getProductPrice(List<String> product) {
-        // TODO : 숫자 아니면 예외처리
         String price = product.get(PRODUCT_PRICE_INDEX);
+        CommonException.validateNumericOnly(price);
         return Integer.valueOf(price);
     }
 

@@ -1,9 +1,6 @@
 package vendingmachine;
 
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class VendingMachine {
@@ -37,6 +34,7 @@ public class VendingMachine {
 
     public EnumMap<Coin, Integer> getChanges() {
         // TODO : 더 나은 로직 찾아보기
+        // TODO : calculateChanges() 리턴하기
         EnumMap<Coin, Integer> result = new EnumMap<>(Coin.class);
         changes.keySet().stream()
                 .filter(coin -> changes.get(coin) > 0)
@@ -74,6 +72,31 @@ public class VendingMachine {
     }
 
     public void calculateChanges() {
+        // TODO : 수정 필요
+        EnumMap<Coin, Integer> returnChanges = new EnumMap<>(Coin.class);
+        List<Coin> availableCoins = getAvailableCoins();
+        for (Coin coin : availableCoins) {
+            if (payment == 0) {
+                break;
+            }
+            if (payment >= coin.getAmount()) {
+                payment -= coin.getAmount();
+                returnChanges.putIfAbsent(coin, 0);
+                returnChanges.put(coin, returnChanges.get(coin) + 1);
+            }
+        }
+        if (payment > 0) {
 
+        }
+    }
+
+    private List<Coin> getAvailableCoins() {
+        return changes.keySet().stream()
+                .filter(coin -> changes.get(coin) > 0)
+                .collect(Collectors.toList());
+    }
+
+    public void putChanges(EnumMap<Coin, Integer> changes) {
+        this.changes = changes;
     }
 }

@@ -9,7 +9,6 @@ public class ProductRepository {
     private static List<Product> products = new ArrayList<>();
 
     public static void addProduct(Product product) {
-        // TODO : validate 추가
         products.add(product);
     }
 

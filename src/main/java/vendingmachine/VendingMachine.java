@@ -99,4 +99,8 @@ public class VendingMachine {
     public void putChanges(EnumMap<Coin, Integer> changes) {
         this.changes = changes;
     }
+
+    public void initializeProducts(HashMap<Product, Integer> products) {
+
+    }
 }

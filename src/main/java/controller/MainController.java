@@ -6,9 +6,7 @@ import vendingmachine.*;
 import view.InputView;
 import view.OutputView;
 
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MainController {
@@ -30,28 +28,57 @@ public class MainController {
 
     public void run() {
         // TODO : 각자 따로 try-catch 구현해야할듯
+        int vendingMachineMoney = getVendingMachineMoney(InputView.readVendingMachineMoney());
+        EnumMap<Coin, Integer> machineCoins = coinGenerator.generate(vendingMachineMoney);
+        OutputView.printVendingMachineCoins(machineCoins);
+        vendingMachine.putChanges(machineCoins);
+        HashMap<Product, Integer> products = getProducts(InputView.readProductInformation());
+        vendingMachine.initializeProducts(products);
+        int payment = getPayment(InputView.readPayment());
+        vendingMachine.addPayment(payment);
+        buyProduct();
+    }
+
+    private HashMap<Product, Integer> getProducts(String readProductInformation) {
         try {
-            int vendingMachineMoney = getVendingMachineMoney(InputView.readVendingMachineMoney());
-            EnumMap<Coin, Integer> machineCoins = coinGenerator.generate(vendingMachineMoney);
-            OutputView.printVendingMachineCoins(machineCoins);
-            vendingMachine.putChanges(machineCoins);
             List<List<String>> productInformation = getProductInformation(InputView.readProductInformation());
-            makeProducts(new ProductMaker(), productInformation);
-            int payment = getPayment(InputView.readPayment());
-            vendingMachine.addPayment(payment);
-            buyProduct();
+            return makeProducts(new ProductMaker(), productInformation);
         } catch (IllegalArgumentException exception) {
             OutputView.printExceptionMessage(exception);
+            return getProducts(InputView.readProductInformation());
         }
     }
 
-    private void makeProducts(ProductMaker productMaker, List<List<String>> productInformation) {
+    private HashMap<Product, Integer> makeProducts(ProductMaker productMaker, List<List<String>> productInformation) {
+        HashMap<Product, Integer> products = new HashMap<>();
         for (List<String> product : productInformation) {
             String productName = getProductName(product);
             int productPrice = getProductPrice(product);
             int productCount = getProductCount(product);
             Product newProduct = productMaker.generate(productName, productPrice);
-            vendingMachine.addProduct(newProduct, productCount);
+            products.put(newProduct, productCount);
+        }
+        return products;
+    }
+
+    private int getVendingMachineMoney(String vendingMachineMoney) {
+        try {
+            validateMoney(vendingMachineMoney);
+            validateMoney(vendingMachineMoney);
+            return Integer.valueOf(vendingMachineMoney);
+        } catch (IllegalArgumentException exception) {
+            OutputView.printExceptionMessage(exception);
+            return getVendingMachineMoney(InputView.readVendingMachineMoney());
+        }
+    }
+
+    private List<List<String>> getProductInformation(String productInformation) {
+        try {
+            List<String> splitProduct = getSplitProduct(productInformation);
+            return getSplitProductInformation(splitProduct);
+        } catch (IllegalArgumentException exception) {
+            OutputView.printExceptionMessage(exception);
+            return getProductInformation(InputView.readProductInformation());
         }
     }
 
@@ -100,11 +127,6 @@ public class MainController {
         return Integer.valueOf(payment);
     }
 
-    private List<List<String>> getProductInformation(String productInformation) {
-        List<String> splitProduct = getSplitProduct(productInformation);
-        return getSplitProductInformation(splitProduct);
-    }
-
     private List<List<String>> getSplitProductInformation(List<String> splitProduct) {
         // TODO : [] 정규표현식으로 대체해보기
         // TODO : validate 추가하기 : , 없는 경우, 세 개 아닌 경우
@@ -119,12 +141,6 @@ public class MainController {
         // TODO : validate 추가하기 : ; 없는 경우 (그러나 한 개인 경우도 고려하기)
         return Arrays.stream(productInformation.split(PRODUCT_DELIMITER))
                 .collect(Collectors.toList());
-    }
-
-    private int getVendingMachineMoney(String vendingMachineMoney) {
-        validateMoney(vendingMachineMoney);
-        validateMoney(vendingMachineMoney);
-        return Integer.valueOf(vendingMachineMoney);
     }
 
     private void validateMoney(String vendingMachineMoney) {

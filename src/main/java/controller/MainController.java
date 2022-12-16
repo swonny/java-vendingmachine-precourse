@@ -27,26 +27,83 @@ public class MainController {
     }
 
     public void run() {
-        // TODO : 각자 따로 try-catch 구현해야할듯
-        int vendingMachineMoney = getVendingMachineMoney(InputView.readVendingMachineMoney());
-        EnumMap<Coin, Integer> machineCoins = coinGenerator.generate(vendingMachineMoney);
-        OutputView.printVendingMachineCoins(machineCoins);
+        EnumMap<Coin, Integer> machineCoins = getMachineCoins(InputView.readVendingMachineMoney());
         vendingMachine.putChanges(machineCoins);
         HashMap<Product, Integer> products = getProducts(InputView.readProductInformation());
         vendingMachine.initializeProducts(products);
-        int payment = getPayment(InputView.readPayment());
+        int payment = getUserPayment(InputView.readPayment());
         vendingMachine.addPayment(payment);
         buyProduct();
     }
 
-    private HashMap<Product, Integer> getProducts(String readProductInformation) {
+    private EnumMap<Coin, Integer> getMachineCoins(String input) {
         try {
-            List<List<String>> productInformation = getProductInformation(InputView.readProductInformation());
-            return makeProducts(new ProductMaker(), productInformation);
+            int vendingMachineMoney = getVendingMachineMoney(input);
+            EnumMap<Coin, Integer> machineCoins = coinGenerator.generate(vendingMachineMoney);
+            OutputView.printVendingMachineCoins(machineCoins);
+            return machineCoins;
+        } catch (IllegalArgumentException exception) {
+            OutputView.printExceptionMessage(exception);
+            return getMachineCoins(InputView.readVendingMachineMoney());
+        }
+    }
+
+    private HashMap<Product, Integer> getProducts(String productInformationInput) {
+        try {
+            List<String> productInformation = getSplitProducts(productInformationInput);
+            List<List<String>> splitProduct = getSplitProductInformation(productInformation);
+            HashMap<Product, Integer> products = makeProducts(new ProductMaker(), splitProduct);
+            return products;
         } catch (IllegalArgumentException exception) {
             OutputView.printExceptionMessage(exception);
             return getProducts(InputView.readProductInformation());
         }
+    }
+
+    private int getUserPayment(String payment) {
+        try {
+            validateMoney(payment);
+            return Integer.valueOf(payment);
+        } catch (IllegalArgumentException exception) {
+            OutputView.printExceptionMessage(exception);
+            return getUserPayment(InputView.readPayment());
+        }
+    }
+
+    private void buyProduct() {
+        if (vendingMachine.isPaymentLowerThanLowestPrice() || vendingMachine.isProductEmpty()) {
+            printResult(vendingMachine.getChanges());
+            return;
+        }
+        OutputView.printAvailablePayment(vendingMachine.getPayment());
+        buy(InputView.readProductName());
+
+        buyProduct();
+    }
+
+    private void buy(String buyingProductName) {
+        try {
+            Product buyingProduct = ProductRepository.getProduct(buyingProductName);
+            vendingMachine.buy(buyingProduct);
+        } catch (IllegalArgumentException exception) {
+            OutputView.printExceptionMessage(exception);
+            buy(InputView.readProductName());
+        }
+    }
+
+    private List<String> getSplitProducts(String productInformation) {
+        return Arrays.stream(productInformation.split(PRODUCT_DELIMITER))
+                .collect(Collectors.toList());
+    }
+
+    private List<List<String>> getSplitProductInformation(List<String> splitProduct) {
+        // TODO : [] 정규표현식으로 대체해보기
+        // TODO : validate 추가하기 : , 없는 경우, 세 개 아닌 경우
+        return splitProduct.stream()
+                .map(product -> product.replace(PRODUCT_START_BRACKET, ""))
+                .map(product -> product.replace(PRODUCT_END_BRACKET, ""))
+                .map(product -> Arrays.stream(product.split(INFORMATION_DELIMITER)).collect(Collectors.toList()))
+                .collect(Collectors.toList());
     }
 
     private HashMap<Product, Integer> makeProducts(ProductMaker productMaker, List<List<String>> productInformation) {
@@ -70,27 +127,6 @@ public class MainController {
             OutputView.printExceptionMessage(exception);
             return getVendingMachineMoney(InputView.readVendingMachineMoney());
         }
-    }
-
-    private List<List<String>> getProductInformation(String productInformation) {
-        try {
-            List<String> splitProduct = getSplitProduct(productInformation);
-            return getSplitProductInformation(splitProduct);
-        } catch (IllegalArgumentException exception) {
-            OutputView.printExceptionMessage(exception);
-            return getProductInformation(InputView.readProductInformation());
-        }
-    }
-
-    private void buyProduct() {
-        if (vendingMachine.isPaymentLowerThanLowestPrice() || vendingMachine.isProductEmpty()) {
-            printResult(vendingMachine.getChanges());
-            return;
-        }
-        OutputView.printAvailablePayment(vendingMachine.getPayment());
-        Product buyingProduct = ProductRepository.getProduct(InputView.readProductName());
-        vendingMachine.buy(buyingProduct);
-        buyProduct();
     }
 
     private void printResult(EnumMap<Coin, Integer> changes) {
@@ -120,27 +156,6 @@ public class MainController {
         if (ProductRepository.has(name)) {
             throw new IllegalArgumentException("이미 존재하는 상품입니다.");
         }
-    }
-
-    private int getPayment(String payment) {
-        validateMoney(payment);
-        return Integer.valueOf(payment);
-    }
-
-    private List<List<String>> getSplitProductInformation(List<String> splitProduct) {
-        // TODO : [] 정규표현식으로 대체해보기
-        // TODO : validate 추가하기 : , 없는 경우, 세 개 아닌 경우
-        return splitProduct.stream()
-                .map(product -> product.replace(PRODUCT_START_BRACKET, ""))
-                .map(product -> product.replace(PRODUCT_END_BRACKET, ""))
-                .map(product -> Arrays.stream(product.split(INFORMATION_DELIMITER)).collect(Collectors.toList()))
-                .collect(Collectors.toList());
-    }
-
-    private List<String> getSplitProduct(String productInformation) {
-        // TODO : validate 추가하기 : ; 없는 경우 (그러나 한 개인 경우도 고려하기)
-        return Arrays.stream(productInformation.split(PRODUCT_DELIMITER))
-                .collect(Collectors.toList());
     }
 
     private void validateMoney(String vendingMachineMoney) {

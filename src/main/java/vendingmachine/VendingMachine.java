@@ -22,9 +22,9 @@ public class VendingMachine {
 
     public boolean isPaymentLowerThanLowestPrice() {
         int lowestPrice = productList.keySet().stream()
-                .map(product -> product.getPrice())
-                .min(Comparator.comparing(x -> x))
-                .orElseThrow(NoSuchElementException::new);
+                        .map(product -> product.getPrice())
+                        .min(Comparator.comparing(x -> x))
+                        .get();
         return lowestPrice > payment;
     }
 
@@ -33,8 +33,6 @@ public class VendingMachine {
     }
 
     public EnumMap<Coin, Integer> getChanges() {
-        // TODO : 더 나은 로직 찾아보기
-        // TODO : calculateChanges() 리턴하기
         EnumMap<Coin, Integer> result = new EnumMap<>(Coin.class);
         changes.keySet().stream()
                 .filter(coin -> changes.get(coin) > 0)
@@ -44,10 +42,6 @@ public class VendingMachine {
 
     public int getPayment() {
         return payment;
-    }
-
-    public void addProduct(Product newProduct, int count) {
-        productList.put(newProduct, count);
     }
 
     public void addPayment(int payment) {
@@ -101,6 +95,6 @@ public class VendingMachine {
     }
 
     public void initializeProducts(HashMap<Product, Integer> products) {
-
+        productList.putAll(products);
     }
 }
